@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "102120148739",
+    "project_id": "cryptomessenger-354e9",
+    "storage_bucket": "cryptomessenger-354e9.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:102120148739:android:f3118a0a2e2e83dfcf2336",
+        "android_client_info": {
+          "package_name": "com.example.messenger"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "102120148739-rgp2ea1e179qdk00d2199o0qbkibu4lo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBQtj-29IDqHvoiqkTPUF6UZYzVtvJp5TA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "102120148739-rgp2ea1e179qdk00d2199o0qbkibu4lo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
