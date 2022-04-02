@@ -27,12 +27,11 @@
             tools:ignore="SpeakableTextPresentCheck" />
 
         <TextView
-            android:id="@+id/chats"
+            android:id="@+id/user_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="2"
-            android:gravity="center"
-            android:text="Чаты" />
+            android:gravity="center" />
 
         <ImageView
             android:id="@+id/userIcon"

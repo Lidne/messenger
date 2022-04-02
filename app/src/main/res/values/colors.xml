@@ -10,9 +10,11 @@
 
     // login screen
     <color name="main_background">#FFFFFFFF</color>
+    <color name="active">#C53131</color>
     <color name="heading">#FFFFFFFF</color>
     <color name="title">#FFFFFFFF</color>
     <color name="edit_text">#FFFFFFFF</color>
     <color name="btn_text">#FFFFFFFF</color>
     <color name="text">#FFFFFFFF</color>
+
 </resources>

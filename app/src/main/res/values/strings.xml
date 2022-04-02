@@ -1,3 +1,18 @@
 <resources>
     <string name="app_name">Messenger</string>
+    <string name="mail">Введите почту</string>
+    <string name="password">Введите пароль</string>
+    <string name="log_in">Войти</string>
+    <string name="logging">Войти в аккаунт</string>
+    <string name="login_fail">Не удалось войти</string>
+    <string name="fail_register">Такой аккаунт не зарегистрирован</string>
+    <string name="register">Зарегистрироваться</string>
+    <string name="registration">Регистрация</string>
+    <string name="repeat_password">Повторите пароль</string>
+    <string name="passwords_doesnt_match">Пароли не совпадают</string>
+    <string name="select_file">Выбрать картинку</string>
+    <string name="image_fail">Не удалось загрузить картинку</string>
+    <string name="nick">Введите ник</string>
+    <string name="not_filled">Не все поля заполнены</string>
+    <string name="user_fail">Не удалось загрузить пользователя</string>
 </resources>
