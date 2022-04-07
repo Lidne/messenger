@@ -1,4 +1,4 @@
-package com.example.messenger;
+package JavaClasses;
 
 import android.content.Context;
 import android.media.Image;

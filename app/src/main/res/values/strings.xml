@@ -15,4 +15,10 @@
     <string name="nick">Введите ник</string>
     <string name="not_filled">Не все поля заполнены</string>
     <string name="user_fail">Не удалось загрузить пользователя</string>
+    <string name="add_chat">Добавить чат</string>
+    <string name="enter_email">Введите почту пользователя</string>
+    <string name="create_chat">Создать чат</string>
+    <string name="cancel">Отмена</string>
+    <string name="unauthorized">Вы не авторизованы</string>
+    <string name="no_user">Такого пользователя не существует</string>
 </resources>

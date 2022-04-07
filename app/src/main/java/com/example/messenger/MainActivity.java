@@ -7,26 +7,26 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 
+import FirebaseModels.User;
+import JavaClasses.ChatAdapter;
+
 public class MainActivity extends Activity {
     private final int LOGIN_REQUEST = 20;
+    private final int ADD_CHAT_REQUEST = 30;
     private final String TAG = "MainActivity";
 
     private FirebaseAuth mAuth;
@@ -35,9 +35,10 @@ public class MainActivity extends Activity {
     private FirebaseUser user;
 
     private TextView username;
-    private Button addChats;
+    private Button addChat;
     private ImageView avatar;
     private ListView chatList;
+    private EditText userEmail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,18 +46,9 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         username = findViewById(R.id.user_name);
-        addChats = findViewById(R.id.addChats);
-        ChatAdapter adapter = new ChatAdapter(this, addChats());
+        addChat = findViewById(R.id.addChats);
+        ChatAdapter adapter = new ChatAdapter(this, falseAddChats());
         avatar = findViewById(R.id.userIcon);
-
-        avatar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent i = new Intent(MainActivity.this, ProfileActivity.class);
-                //i.setData(Uri.parse(url));
-                startActivityForResult(i, LOGIN_REQUEST);
-            }
-        });
 
         chatList = findViewById(R.id.chatList);
         chatList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -68,6 +60,10 @@ public class MainActivity extends Activity {
             }
         });
         chatList.setAdapter(adapter);
+
+        userEmail = findViewById(R.id.personName);
+
+// 3. Get the <code><a href="/reference/android/app/AlertDialog.html">AlertDialog</a></code> from <code><a href="/reference/android/app/AlertDialog.Builder.html#create()">create()</a></code>
 
         mAuth = FirebaseAuth.getInstance();
         mFirestore = FirebaseFirestore.getInstance();
@@ -94,6 +90,17 @@ public class MainActivity extends Activity {
         CollectionReference translationsRef = mFirestore
     }*/
 
+    public void addChats(View target) {
+        Intent i = new Intent(MainActivity.this, AddChatActivity.class);
+        startActivityForResult(i, ADD_CHAT_REQUEST);
+    }
+
+    public void profile(View target) {
+        Intent i = new Intent(MainActivity.this, ProfileActivity.class);
+        //i.setData(Uri.parse(url));
+        startActivityForResult(i, LOGIN_REQUEST);
+    }
+
     private void checkAuth() {
         Log.d(TAG, "checkAuth: " + mAuth.getCurrentUser());
         if (mAuth.getCurrentUser() == null) {
@@ -107,7 +114,7 @@ public class MainActivity extends Activity {
         }
     }
 
-    private ChatAdapter.Chat[] addChats() {
+    private ChatAdapter.Chat[] falseAddChats() {
         ChatAdapter.Chat[] arr = new ChatAdapter.Chat[5];
         arr[0] = new ChatAdapter.Chat("Купи пельмешек", "Niggward");
         arr[1] = new ChatAdapter.Chat("lET'S DANCE", "Jetstream Sam");

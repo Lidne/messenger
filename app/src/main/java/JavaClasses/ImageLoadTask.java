@@ -1,4 +1,4 @@
-package com.example.messenger;
+package JavaClasses;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;

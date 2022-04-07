@@ -24,6 +24,7 @@
             android:layout_weight="0.5"
 
             android:gravity="start"
+            android:onClick="addChats"
             tools:ignore="SpeakableTextPresentCheck" />
 
         <TextView
@@ -39,6 +40,7 @@
             android:layout_height="40dp"
             android:layout_margin="6dp"
             android:layout_weight="1"
+            android:onClick="profile"
             android:src="@drawable/niggward" />
     </LinearLayout>
 

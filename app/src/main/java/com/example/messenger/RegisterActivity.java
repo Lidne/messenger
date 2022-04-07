@@ -30,9 +30,9 @@ import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Map;
+
+import FirebaseModels.User;
 
 public class RegisterActivity extends Activity {
     private final String TAG = "RegisterActivity";

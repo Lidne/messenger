@@ -1,4 +1,4 @@
-package com.example.messenger;
+package FirebaseModels;
 
 public class User {
     private String email;
