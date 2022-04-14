@@ -34,7 +34,7 @@
         android:minHeight="48dp" />
 
     <Button
-        android:id="@+id/addChat"
+        android:id="@+id/addChats"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"

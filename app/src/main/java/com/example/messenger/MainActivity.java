@@ -2,6 +2,7 @@ package com.example.messenger;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -13,16 +14,37 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+
+import com.google.android.gms.common.internal.ServiceSpecificExtraArgs;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import FirebaseModels.Chat;
+import FirebaseModels.Message;
 import FirebaseModels.User;
 import JavaClasses.ChatAdapter;
+import JavaClasses.RSA;
 
 public class MainActivity extends Activity {
     private final int LOGIN_REQUEST = 20;
@@ -31,14 +53,13 @@ public class MainActivity extends Activity {
 
     private FirebaseAuth mAuth;
     private FirebaseFirestore mFirestore;
-    private FirebaseStorage mStorage;
     private FirebaseUser user;
 
     private TextView username;
     private Button addChat;
-    private ImageView avatar;
     private ListView chatList;
     private EditText userEmail;
+    private Chat[] chat_arr;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,33 +68,79 @@ public class MainActivity extends Activity {
 
         username = findViewById(R.id.user_name);
         addChat = findViewById(R.id.addChats);
-        ChatAdapter adapter = new ChatAdapter(this, falseAddChats());
-        avatar = findViewById(R.id.userIcon);
 
         chatList = findViewById(R.id.chatList);
         chatList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent i = new Intent(MainActivity.this, ChatActivity.class);
+                Chat chat = chat_arr[position];
+                Log.d(TAG, "onItemClick: " + chat);
+                i.putExtra("chatId", chat.getChatId());
                 //i.setData(Uri.parse(url));
                 startActivity(i);
             }
         });
-        chatList.setAdapter(adapter);
 
         userEmail = findViewById(R.id.personName);
 
-// 3. Get the <code><a href="/reference/android/app/AlertDialog.html">AlertDialog</a></code> from <code><a href="/reference/android/app/AlertDialog.Builder.html#create()">create()</a></code>
 
         mAuth = FirebaseAuth.getInstance();
         mFirestore = FirebaseFirestore.getInstance();
-        mStorage = FirebaseStorage.getInstance();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         checkAuth();
+
+        if (mAuth.getCurrentUser() == null) return;
+        mFirestore.collection("chats")
+                .whereNotEqualTo(mAuth.getCurrentUser().getUid(), null)
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @RequiresApi(api = Build.VERSION_CODES.O)
+                    @Override
+                    public void onEvent(@Nullable QuerySnapshot value,
+                                        @Nullable FirebaseFirestoreException e) {
+                        /*FirebaseUser currentUser = mAuth.getCurrentUser();
+                        Chat[] chats = new Chat[value.size()];
+                        int i = 0;
+                        for (QueryDocumentSnapshot document : value) {
+                            HashMap<String, String> user = new HashMap<>();
+                            HashMap<String, String> another_user = new HashMap<>();
+                            String last_message = "";
+                            Map<String, Object> data = document.getData();
+                            Log.d(TAG, "onEvent: data = " + data);
+                            for (String key : data.keySet()) {
+                                if (key.equals(currentUser.getUid())) {
+                                    user = (HashMap<String, String>) data.get(currentUser.getUid());
+                                } else if (!key.equals("last_message")) {
+                                    Log.d(TAG, "onEvent: " + key);
+                                    Log.d(TAG, "onEvent: " + data.keySet());
+                                    another_user = (HashMap<String, String>) data.get(key);
+                                } else {
+                                    last_message = (String) data.get("last_message");
+                                }
+                            }
+                            if (user.get("public_key") == null) {
+                                try {
+                                    RSA rsa = new RSA(MainActivity.this);
+                                    rsa.writeKeys(document.getId());
+                                    user.put("public_key", rsa.getStrPublicKey());
+                                    Log.d(TAG, "onEvent: " + user);
+                                    mFirestore.collection("chats").document(document.getId())
+                                            .update(currentUser.getUid(), user.clone());
+                                } catch (Exception err) {
+                                    Log.d(TAG, "onEvent: " + err);
+                                }
+                            }
+                            chats[i] = new Chat(user, another_user, last_message);
+                            i++;
+                        }
+                        chatList.setAdapter(new ChatAdapter(MainActivity.this, chats, mAuth));*/
+                        updateChats();
+                    }
+                });
     }
 
     @Override
@@ -108,21 +175,109 @@ public class MainActivity extends Activity {
             startActivityForResult(i, LOGIN_REQUEST);
         } else {
             user = mAuth.getCurrentUser();
+            final DocumentReference docUser = mFirestore.collection("users").document(user.getUid());
+            docUser.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                @Override
+                public void onSuccess(DocumentSnapshot documentSnapshot) {
+                    User user = documentSnapshot.toObject(User.class);
+                    if (user != null) username.setText(user.getNick());
+                    else {
+                        Toast.makeText(MainActivity.this, R.string.user_fail,
+                                Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
             //ImageLoadTask loadTask = new ImageLoadTask(user.getPhotoUrl().toString(), img);
             //loadTask.execute();
             // TODO: update UI
         }
     }
 
-    private ChatAdapter.Chat[] falseAddChats() {
-        ChatAdapter.Chat[] arr = new ChatAdapter.Chat[5];
-        arr[0] = new ChatAdapter.Chat("Купи пельмешек", "Niggward");
-        arr[1] = new ChatAdapter.Chat("lET'S DANCE", "Jetstream Sam");
-        arr[2] = new ChatAdapter.Chat("я как томас шелби", "Tomas Bebra");
-        arr[3] = new ChatAdapter.Chat("я не успел сделать бэкэнд...", "Ura Lidne");
-        arr[4] = new ChatAdapter.Chat("SUS SUS SUS SUS", "Amogus");
-        return arr;
+    private void updateChats() {
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        mFirestore.collection("chats")
+                .whereNotEqualTo(currentUser.getUid(), null)
+                .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                Chat[] chats = new Chat[task.getResult().size()];
+                if (task.isSuccessful()) {
+                    int i = 0;
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        HashMap<String, String> user = new HashMap<>();
+                        HashMap<String, String> another_user = new HashMap<>();
+                        String last_message = "";
+                        Map<String, Object> data = document.getData();
+                        for (String key : data.keySet()) {
+                            if (key.equals(currentUser.getUid())) {
+                                user = (HashMap<String, String>) data.get(currentUser.getUid());
+                            } else if (!key.equals("last_message")) {
+                                another_user = (HashMap<String, String>) data.get(key);
+                            } else {
+                                last_message = (String) data.get("last_message");
+                            }
+                        }
+                        if (user.get("public_key") == null) {
+                            try {
+                                RSA rsa = new RSA(MainActivity.this, true);
+                                rsa.writeKeys(document.getId());
+                                user.put("public_key", rsa.getStrPublicKey());
+                                Log.d(TAG, "onEvent: " + user);
+                                mFirestore.collection("chats").document(document.getId())
+                                        .update(currentUser.getUid(), user.clone());
+                            } catch (Exception err) {
+                                Log.d(TAG, "onEvent: " + err);
+                            }
+                        }
+                        chats[i] = new Chat(document.getId(), user, another_user, last_message);
+                        i++;
+                    }
+                    chat_arr = chats.clone();
+                    chatList.setAdapter(new ChatAdapter(MainActivity.this, chats, mAuth));
+                } else {
+                    Log.d(TAG, "Error getting documents: ", task.getException());
+                }
+                //ChatAdapter adapter = new ChatAdapter(MainActivity.this, );
+                //chatList.setAdapter();
+            }
+        });
     }
+
+    /*private void reloadChats() {
+
+        ChatAdapter adapter = new ChatAdapter(this, getChats(), mAuth);
+        chatList.setAdapter(adapter);
+    }*/
+
+    /*private Chat[] getChats() {
+        mFirestore.collection("chats").where
+        Chat[] arr = new Chat[5];
+        return arr;
+    }*/
+
+    /*private void setChatUpdateListener() {
+        mFirestore.collection("chats")
+                .whereEqualTo("", "CA")
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable QuerySnapshot snapshots,
+                                        @Nullable FirestoreException e) {
+                        if (e != null) {
+                            System.err.println("Listen failed:" + e);
+                            return;
+                        }
+
+                        List<String> cities = new ArrayList<>();
+                        for (DocumentSnapshot doc : snapshots) {
+                            if (doc.get("name") != null) {
+                                cities.add(doc.getString("name"));
+                            }
+                        }
+                        System.out.println("Current cites in CA: " + cities);
+                    }
+                });
+    }*/
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -130,19 +285,7 @@ public class MainActivity extends Activity {
         switch (requestCode) {
             case LOGIN_REQUEST:
                 if (resultCode == RESULT_OK) {
-                    user = mAuth.getCurrentUser();
-                    final DocumentReference docUser = mFirestore.collection("users").document(user.getUid());
-                    docUser.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                        @Override
-                        public void onSuccess(DocumentSnapshot documentSnapshot) {
-                            User user = documentSnapshot.toObject(User.class);
-                            if (user != null) username.setText(user.getNick());
-                            else {
-                                Toast.makeText(MainActivity.this, R.string.user_fail,
-                                        Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    });
+                    checkAuth();
                 }
         }
     }

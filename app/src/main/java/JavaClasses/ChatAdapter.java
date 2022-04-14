@@ -2,6 +2,7 @@ package JavaClasses;
 
 import android.content.Context;
 import android.media.Image;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,28 +11,23 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.messenger.R;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import FirebaseModels.Chat;
+import FirebaseModels.User;
 
 
-public class ChatAdapter extends ArrayAdapter<ChatAdapter.Chat> {
+public class ChatAdapter extends ArrayAdapter<Chat> {
+    private FirebaseAuth mAuth;
+    private final String TAG = "ChatAdapter";
 
-    public static class Chat {
-        String lastMessage;
-        Date date;
-        String userName;
-        Image userAvatar;
-
-        public Chat(String lastMessage, String userName) {
-            this.lastMessage = lastMessage;
-            this.userName = userName;
-            this.userAvatar = null;
-            this.date = new Date();
-        }
-    }
-
-    public ChatAdapter(Context context, Chat[] arr) {
+    public ChatAdapter(Context context, Chat[] arr, FirebaseAuth mAuth) {
         super(context, R.layout.chat, arr);
+        this.mAuth = mAuth;
     }
 
     @Override
@@ -43,11 +39,8 @@ public class ChatAdapter extends ArrayAdapter<ChatAdapter.Chat> {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.chat, null);
         }
 
-        ((TextView) convertView.findViewById(R.id.userName)).setText(chat.userName);
-        ((TextView) convertView.findViewById(R.id.lastMessage)).setText(chat.lastMessage);
-
-        ImageView img = (ImageView) convertView.findViewById(R.id.chatAvatar);
-        img.setImageResource(R.drawable.sam);
+        ((TextView) convertView.findViewById(R.id.userName)).setText(chat.getAnotherUser().get("nick"));
+        ((TextView) convertView.findViewById(R.id.lastMessage)).setText(chat.getLastMessage());
 
         return convertView;
     }

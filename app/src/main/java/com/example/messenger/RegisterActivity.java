@@ -45,7 +45,6 @@ public class RegisterActivity extends Activity {
 
     private Uri file;
 
-    private Dialog dialog;
     private EditText nick;
     private EditText email;
     private EditText password;
@@ -63,13 +62,11 @@ public class RegisterActivity extends Activity {
         mStorage = FirebaseStorage.getInstance();
         mFirestore = FirebaseFirestore.getInstance();
 
-        dialog = new Dialog(RegisterActivity.this);
         nick = findViewById(R.id.nick);
         email = findViewById(R.id.email_register);
         password = findViewById(R.id.password_register);
         password_repeat = findViewById(R.id.password_repeat);
         registerBtn = findViewById(R.id.register);
-        imageView = findViewById(R.id.imageView);
     }
 
     public void register(View target) {
@@ -96,8 +93,7 @@ public class RegisterActivity extends Activity {
                             FirebaseUser user = mAuth.getCurrentUser();
                             assert user != null;
                             final DocumentReference docRef = mFirestore.collection("users").document(user.getUid());
-                            String avatar_url = uploadAvatar();
-                            docRef.set(new User(email.getText().toString(), nick.getText().toString(), avatar_url));
+                            docRef.set(new User(email.getText().toString(), nick.getText().toString()));
                             Intent i = new Intent();
                             i.putExtra("email", email.getText().toString());
                             i.putExtra("password", password.getText().toString());
@@ -115,7 +111,7 @@ public class RegisterActivity extends Activity {
                 });
     }
 
-    public void selectImage(View target)
+    /*public void selectImage(View target)
     {
         // Defining Implicit Intent to mobile gallery
         Intent intent = new Intent();
@@ -126,9 +122,9 @@ public class RegisterActivity extends Activity {
                         intent,
                         "Select Image from here..."),
                 PICK_IMAGE_REQUEST);
-    }
+    }*/
 
-    private String uploadAvatar() {
+    /*private String uploadAvatar() {
         final String[] url = new String[1];
         StorageReference uploadRef = mStorage.getReference().child("uploads");
         final DocumentReference docRef = mFirestore.collection("users").document();
@@ -147,7 +143,7 @@ public class RegisterActivity extends Activity {
             }
         });
         return url[0];
-    }
+    }*/
 
     @Override
     protected void onActivityResult(int requestCode,

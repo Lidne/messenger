@@ -21,4 +21,6 @@
     <string name="cancel">Отмена</string>
     <string name="unauthorized">Вы не авторизованы</string>
     <string name="no_user">Такого пользователя не существует</string>
+    <string name="profile">Профиль</string>
+    <string name="back">Назад</string>
 </resources>

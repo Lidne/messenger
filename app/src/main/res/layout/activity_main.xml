@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_marginTop="6dp"
+    android:orientation="vertical"
     android:theme="@android:style/Theme.Black.NoTitleBar"
     tools:context=".MainActivity">
 
@@ -15,33 +16,48 @@
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_goneMarginTop="8dp">
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/addChats"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="0.5"
-
-            android:gravity="start"
+            android:layout_gravity="center"
+            android:layout_marginStart="8dp"
+            android:gravity="center"
             android:onClick="addChats"
+            android:textAllCaps="false"
+            app:backgroundTint="@color/active"
+            app:icon="@drawable/white_plus"
+            app:iconGravity="start"
+            app:iconSize="27dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             tools:ignore="SpeakableTextPresentCheck" />
 
         <TextView
             android:id="@+id/user_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="2"
+            android:layout_gravity="center"
+            android:layout_margin="5dp"
+            android:layout_weight="6"
             android:gravity="center" />
 
-        <ImageView
-            android:id="@+id/userIcon"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_margin="6dp"
-            android:layout_weight="1"
+        <Button
+            android:id="@+id/profile"
+            android:layout_width="97dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="0.5"
+            android:backgroundTint="@color/active"
             android:onClick="profile"
-            android:src="@drawable/niggward" />
+            android:text="@string/profile"
+            android:textColor="@color/white" />
+
     </LinearLayout>
 
     <ListView
