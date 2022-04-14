@@ -23,4 +23,6 @@
     <string name="no_user">Такого пользователя не существует</string>
     <string name="profile">Профиль</string>
     <string name="back">Назад</string>
+    <string name="logout">Выйти</string>
+    <string name="userEmail">Почта:</string>
 </resources>

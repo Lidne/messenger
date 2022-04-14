@@ -53,7 +53,6 @@ public class AuthActivity extends Activity {
     }
 
     public void logIn(View target) {
-        Log.d(TAG, "logIn: " + (email.getText() == null || password.getText() == null));
         if (email.getText() == null || password.getText() == null || email.getText().toString().equals("") || password.getText().toString().equals("")) {
             Toast.makeText(AuthActivity.this, R.string.not_filled,
                     Toast.LENGTH_SHORT).show();

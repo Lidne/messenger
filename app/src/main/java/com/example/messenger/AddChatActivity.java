@@ -110,7 +110,6 @@ public class AddChatActivity extends Activity {
                         }
                         Map<String, Object> user = task.getResult().getData();
                         user.put("public_key", pub_key);
-                        Log.d(TAG, "onComplete: " + pub_key);
                         users.put(task.getResult().getId(), user);
 
                         doc.set(users).addOnCompleteListener(new OnCompleteListener<Void>() {

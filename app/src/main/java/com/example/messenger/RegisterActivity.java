@@ -111,40 +111,6 @@ public class RegisterActivity extends Activity {
                 });
     }
 
-    /*public void selectImage(View target)
-    {
-        // Defining Implicit Intent to mobile gallery
-        Intent intent = new Intent();
-        intent.setType("image/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(
-                Intent.createChooser(
-                        intent,
-                        "Select Image from here..."),
-                PICK_IMAGE_REQUEST);
-    }*/
-
-    /*private String uploadAvatar() {
-        final String[] url = new String[1];
-        StorageReference uploadRef = mStorage.getReference().child("uploads");
-        final DocumentReference docRef = mFirestore.collection("users").document();
-        StorageReference uploadFile = uploadRef.child(docRef.getId() + ".png");
-        StorageMetadata uploadMetadata = new StorageMetadata.Builder().setContentType("image/png").build();
-
-        uploadFile.putFile(file, uploadMetadata).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(RegisterActivity.this, R.string.image_fail, Toast.LENGTH_SHORT).show();
-            }
-        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                url[0] =  uploadFile.getDownloadUrl().toString();
-            }
-        });
-        return url[0];
-    }*/
-
     @Override
     protected void onActivityResult(int requestCode,
                                     int resultCode,

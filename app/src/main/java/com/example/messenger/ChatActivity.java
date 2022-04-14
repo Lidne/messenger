@@ -6,6 +6,7 @@ import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
+import android.content.Context;
 import android.media.metrics.Event;
 import android.os.Build;
 import android.os.Bundle;
@@ -23,6 +24,7 @@ import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -30,9 +32,20 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.gson.Gson;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.security.InvalidKeyException;
+import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
+import java.security.spec.EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -42,6 +55,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
 import FirebaseModels.Chat;
+import FirebaseModels.Message;
 import JavaClasses.MessageController;
 import JavaClasses.RSA;
 
@@ -61,7 +75,6 @@ public class ChatActivity extends Activity {
     private TextView nickDisplay;
     private CollectionReference messages;
     private RSA rsa;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,20 +124,15 @@ public class ChatActivity extends Activity {
 
             }
         });
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    @Override
-    protected void onStart() {
-        super.onStart();
 
         Bundle extras = getIntent().getExtras();
         if (extras == null) return;
         String chatId = extras.getString("chatId");
         chatRef = mFirestore.collection("chats").document(chatId);
-
+        messages = chatRef.collection("messages");
 
         chatRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 FirebaseUser currentUser = mAuth.getCurrentUser();
@@ -153,74 +161,105 @@ public class ChatActivity extends Activity {
                     rsa = new RSA(ChatActivity.this, false);
                     rsa.setPublicKey(chat.getAnotherUser().get("public_key"));
                     rsa.readPrivate(chatId);
-                    Log.d(TAG, "onComplete: private" + rsa.getPrivateKey());
-                    Log.d(TAG, "onStart: public" + rsa.getPublicKey());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            }
-        });
 
-        chatRef.collection("messages").orderBy("date").addSnapshotListener(new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                FirebaseUser current_user = mAuth.getCurrentUser();
-                if (value.size() < 1) return;
-                for (DocumentSnapshot doc : value.getDocuments()) {
-                    String decr_text = null;
+                chatRef.collection("messages").orderBy("date").addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                        FirebaseUser current_user = mAuth.getCurrentUser();
+                        if (value.size() < 1) return;
 
-                    if (!doc.get("user_id").equals(current_user.getUid()) && (boolean) doc.getData().get("read")) {
-                        Log.d(TAG, "onEvent: " + doc.get("user_id") + "---" + current_user.getUid());
-                        try {
-                            decr_text = rsa.decrypt((String) doc.get("text"));
-                            chatRef.collection("messages").document(doc.getId()).update("read", true);
+                        for (DocumentChange docChange : value.getDocumentChanges()) {
+                            if (docChange.getType() != DocumentChange.Type.ADDED) continue;
+                            String decr_text = null;
+                            DocumentSnapshot doc = docChange.getDocument();
+                            if (!doc.get("user_id").equals(current_user.getUid())) {
+                                try {
+                                    decr_text = rsa.decrypt((String) doc.get("text"));
 
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                                controller.addMessage(
+                                        new MessageController.Message(decr_text,
+                                                (String) doc.get("nick"), !doc.get("user_id").equals(current_user.getUid()))
+                                );
+                            } else {
+                                try {
+                                    Message msg = readMessage(doc.getId());
+                                    controller.addMessage(
+                                            new MessageController.Message(msg.getText(), msg.getNick(), !doc.get("user_id").equals(current_user.getUid())));
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
                         }
-                        controller.addMessage(
-                                new MessageController.Message(decr_text,
-                                        (String) doc.get("nick"), true)
-                        );
                     }
-                }
+                });
             }
         });
-
-        messages = mFirestore.collection("chats").document(chatId).collection("messages");
+        Log.d(TAG, "onCreate: " + rsa);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public void postMessage(View view) throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public void postMessage(View view) throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, IOException {
         FirebaseUser currentUser = mAuth.getCurrentUser();
         DocumentReference message = messages.document();
         String text = chatMessage.getText().toString();
         String enc_text = rsa.encrypt(text);
+        chatMessage.setText("");
         HashMap<String, Object> msg = new HashMap<String, Object>();
         Timestamp date = new Timestamp(new Date());
-        msg.put("date", date);
-        msg.put("text", enc_text);
+        msg.put("text", text);
         msg.put("nick", chat.getUser().get("nick"));
         msg.put("user_id", currentUser.getUid());
-        msg.put("read", false);
+        saveMessage(message.getId(), msg);
+
+        msg.put("text", enc_text);
+        msg.put("date", date);
         message.set(msg).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-                chatRef.update("last_message", enc_text);
-                controller.addMessage(
-                        new MessageController.Message(text, chat.getUser().get("nick"), false)
-                );
+                chatRef.update("last_message", text);
             }
         });
     }
 
-    public void onClick(View view) {
-        String usermessage = chatMessage.getText().toString();
-        if (!usermessage.equals(""))
-            controller.addMessage(
-                    new MessageController.Message(usermessage,
-                            "Niggward", true)
-            );
-        chatMessage.setText("");
+    private void saveMessage(String id, HashMap<String, Object> message) throws IOException {
+        Context context = ChatActivity.this;
+        File path = new File(context.getFilesDir() + "/" + chat.getChatId() + "/messages");
+        if (!path.exists()) path.mkdirs();
+        File message_file = new File(context.getFilesDir() + "/" + chat.getChatId() + "/messages/" + id);
+        if (!message_file.exists()) {
+            if (!message_file.createNewFile()) return;
+        }
+        FileOutputStream message_file_out = new FileOutputStream(message_file);
+        Gson gson = new Gson();
+        message_file_out.write(gson.toJson(message).getBytes(StandardCharsets.UTF_8));
+        message_file_out.close();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private Message readMessage(String id) throws IOException {
+        Context context = ChatActivity.this;
+        File message_file = new File(context.getFilesDir() + "/" + chat.getChatId() + "/messages/" + id);
+        byte[] messageBytes = Files.readAllBytes(message_file.toPath());
+        String message = new String(messageBytes, StandardCharsets.UTF_8);
+        Gson gson = new Gson();
+        Message msg = gson.fromJson(message, (Type) Message.class);
+        Log.d(TAG, "readMessage: " + msg);
+        return msg;
+    }
+
+    public void goBack(View view) {
+        finish();
     }
 }

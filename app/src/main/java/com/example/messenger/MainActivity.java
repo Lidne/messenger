@@ -75,9 +75,7 @@ public class MainActivity extends Activity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent i = new Intent(MainActivity.this, ChatActivity.class);
                 Chat chat = chat_arr[position];
-                Log.d(TAG, "onItemClick: " + chat);
                 i.putExtra("chatId", chat.getChatId());
-                //i.setData(Uri.parse(url));
                 startActivity(i);
             }
         });
@@ -102,42 +100,6 @@ public class MainActivity extends Activity {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot value,
                                         @Nullable FirebaseFirestoreException e) {
-                        /*FirebaseUser currentUser = mAuth.getCurrentUser();
-                        Chat[] chats = new Chat[value.size()];
-                        int i = 0;
-                        for (QueryDocumentSnapshot document : value) {
-                            HashMap<String, String> user = new HashMap<>();
-                            HashMap<String, String> another_user = new HashMap<>();
-                            String last_message = "";
-                            Map<String, Object> data = document.getData();
-                            Log.d(TAG, "onEvent: data = " + data);
-                            for (String key : data.keySet()) {
-                                if (key.equals(currentUser.getUid())) {
-                                    user = (HashMap<String, String>) data.get(currentUser.getUid());
-                                } else if (!key.equals("last_message")) {
-                                    Log.d(TAG, "onEvent: " + key);
-                                    Log.d(TAG, "onEvent: " + data.keySet());
-                                    another_user = (HashMap<String, String>) data.get(key);
-                                } else {
-                                    last_message = (String) data.get("last_message");
-                                }
-                            }
-                            if (user.get("public_key") == null) {
-                                try {
-                                    RSA rsa = new RSA(MainActivity.this);
-                                    rsa.writeKeys(document.getId());
-                                    user.put("public_key", rsa.getStrPublicKey());
-                                    Log.d(TAG, "onEvent: " + user);
-                                    mFirestore.collection("chats").document(document.getId())
-                                            .update(currentUser.getUid(), user.clone());
-                                } catch (Exception err) {
-                                    Log.d(TAG, "onEvent: " + err);
-                                }
-                            }
-                            chats[i] = new Chat(user, another_user, last_message);
-                            i++;
-                        }
-                        chatList.setAdapter(new ChatAdapter(MainActivity.this, chats, mAuth));*/
                         updateChats();
                     }
                 });
@@ -169,7 +131,6 @@ public class MainActivity extends Activity {
     }
 
     private void checkAuth() {
-        Log.d(TAG, "checkAuth: " + mAuth.getCurrentUser());
         if (mAuth.getCurrentUser() == null) {
             Intent i = new Intent(MainActivity.this, AuthActivity.class);
             startActivityForResult(i, LOGIN_REQUEST);
@@ -187,9 +148,6 @@ public class MainActivity extends Activity {
                     }
                 }
             });
-            //ImageLoadTask loadTask = new ImageLoadTask(user.getPhotoUrl().toString(), img);
-            //loadTask.execute();
-            // TODO: update UI
         }
     }
 
@@ -223,7 +181,6 @@ public class MainActivity extends Activity {
                                 RSA rsa = new RSA(MainActivity.this, true);
                                 rsa.writeKeys(document.getId());
                                 user.put("public_key", rsa.getStrPublicKey());
-                                Log.d(TAG, "onEvent: " + user);
                                 mFirestore.collection("chats").document(document.getId())
                                         .update(currentUser.getUid(), user.clone());
                             } catch (Exception err) {
@@ -238,46 +195,9 @@ public class MainActivity extends Activity {
                 } else {
                     Log.d(TAG, "Error getting documents: ", task.getException());
                 }
-                //ChatAdapter adapter = new ChatAdapter(MainActivity.this, );
-                //chatList.setAdapter();
             }
         });
     }
-
-    /*private void reloadChats() {
-
-        ChatAdapter adapter = new ChatAdapter(this, getChats(), mAuth);
-        chatList.setAdapter(adapter);
-    }*/
-
-    /*private Chat[] getChats() {
-        mFirestore.collection("chats").where
-        Chat[] arr = new Chat[5];
-        return arr;
-    }*/
-
-    /*private void setChatUpdateListener() {
-        mFirestore.collection("chats")
-                .whereEqualTo("", "CA")
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                    @Override
-                    public void onEvent(@Nullable QuerySnapshot snapshots,
-                                        @Nullable FirestoreException e) {
-                        if (e != null) {
-                            System.err.println("Listen failed:" + e);
-                            return;
-                        }
-
-                        List<String> cities = new ArrayList<>();
-                        for (DocumentSnapshot doc : snapshots) {
-                            if (doc.get("name") != null) {
-                                cities.add(doc.getString("name"));
-                            }
-                        }
-                        System.out.println("Current cites in CA: " + cities);
-                    }
-                });
-    }*/
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {

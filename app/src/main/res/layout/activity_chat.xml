@@ -60,6 +60,7 @@
         android:layout_width="81dp"
         android:layout_height="40dp"
         android:backgroundTint="@color/active"
+        android:onClick="goBack"
         android:text="@string/back"
         android:textSize="10sp"
         app:layout_constraintStart_toStartOf="parent"

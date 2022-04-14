@@ -58,11 +58,9 @@ public class RSA {
             if (!public_file.exists()) {
                 if (!public_file.createNewFile()) return;
             }
-            Log.d("TAG", "writePrivate: " + public_file.exists());
             FileOutputStream public_file_out = new FileOutputStream(public_file);
             public_file_out.write(this.publicKey.getEncoded());
             public_file_out.close();
-            Log.d("TAG", "writePublic: written to " + context.getFilesDir());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -76,11 +74,9 @@ public class RSA {
             if (!private_file.exists()) {
                 if (!private_file.createNewFile()) return;
             }
-            Log.d("TAG", "writePrivate: " + private_file.exists());
             FileOutputStream private_file_out = new FileOutputStream(private_file);
             private_file_out.write(this.privateKey.getEncoded());
             private_file_out.close();
-            Log.d("TAG", "writePrivate: written to " + context.getFilesDir());
         } catch (IOException e) {
             e.printStackTrace();
         }
