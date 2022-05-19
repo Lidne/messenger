@@ -24,8 +24,6 @@ public class AuthActivity extends Activity {
     private final String TAG = "AuthActivity";
 
     private FirebaseAuth mAuth;
-    private FirebaseFirestore mFirestore;
-    private FirebaseStorage mStorage;
 
     private Dialog dialog;
     private EditText email;
@@ -38,8 +36,6 @@ public class AuthActivity extends Activity {
         setContentView(R.layout.activity_auth);
 
         mAuth = FirebaseAuth.getInstance();
-        mFirestore = FirebaseFirestore.getInstance();
-        mStorage = FirebaseStorage.getInstance();
 
         dialog = new Dialog(AuthActivity.this);
         email = findViewById(R.id.email);

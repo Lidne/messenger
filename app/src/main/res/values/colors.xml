@@ -9,8 +9,9 @@
     <color name="white">#FFFFFFFF</color>
 
     // login screen
-    <color name="main_background">#FFFFFFFF</color>
+    <color name="main">#FFFFFFFF</color>
     <color name="active">#C53131</color>
+    <color name="accent">#868686</color>
     <color name="heading">#FFFFFFFF</color>
     <color name="title">#FFFFFFFF</color>
     <color name="edit_text">#FFFFFFFF</color>

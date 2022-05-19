@@ -5,19 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/userNick"
-        android:layout_width="match_parent"
-        android:layout_height="30dp"
-        android:fontFamily="sans-serif-black"
-        android:gravity="center"
-        android:text="Lidne"
-        android:textColor="@color/black"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chatWindow"
         android:layout_width="387dp"
@@ -28,6 +15,45 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/userNick" />
+
+    <ImageView
+        android:id="@+id/icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:src="@drawable/lock" />
+
+    <TextView
+        android:id="@+id/warning"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:fontFamily="@font/anaheim"
+        android:gravity="center"
+        android:text="@string/unsafe_connection"
+        android:textColor="@color/active"
+        android:textSize="16sp"
+        android:typeface="normal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/icon" />
+
+    <TextView
+        android:id="@+id/userNick"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="@color/accent"
+        android:fontFamily="sans-serif-black"
+        android:gravity="center"
+        android:text="Lidne"
+        android:textColor="@color/main"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
         android:id="@+id/linearLayout"
@@ -51,17 +77,21 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:backgroundTint="@color/active"
             android:onClick="postMessage"
-            android:text="Отправить" />
+            android:text="Отправить"
+            android:textColor="@color/main" />
     </LinearLayout>
 
     <Button
         android:id="@+id/back"
         android:layout_width="81dp"
         android:layout_height="40dp"
+        android:layout_marginStart="8dp"
         android:backgroundTint="@color/active"
         android:onClick="goBack"
         android:text="@string/back"
+        android:textColor="@color/main"
         android:textSize="10sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

@@ -85,14 +85,15 @@ public class MainActivity extends Activity {
 
         mAuth = FirebaseAuth.getInstance();
         mFirestore = FirebaseFirestore.getInstance();
+        checkAuth();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        checkAuth();
 
         if (mAuth.getCurrentUser() == null) return;
+        Log.d(TAG, "onStart: " + mAuth.getCurrentUser());
         mFirestore.collection("chats")
                 .whereNotEqualTo(mAuth.getCurrentUser().getUid(), null)
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
@@ -100,6 +101,7 @@ public class MainActivity extends Activity {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot value,
                                         @Nullable FirebaseFirestoreException e) {
+                        Log.d(TAG, "onStart1: " + mAuth.getCurrentUser());
                         updateChats();
                     }
                 });
@@ -136,6 +138,7 @@ public class MainActivity extends Activity {
             startActivityForResult(i, LOGIN_REQUEST);
         } else {
             user = mAuth.getCurrentUser();
+            Log.d(TAG, "checkAuth: " + user);
             final DocumentReference docUser = mFirestore.collection("users").document(user.getUid());
             docUser.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                 @Override
@@ -153,6 +156,7 @@ public class MainActivity extends Activity {
 
     private void updateChats() {
         FirebaseUser currentUser = mAuth.getCurrentUser();
+        Log.d(TAG, "updateChats: " + currentUser);
         mFirestore.collection("chats")
                 .whereNotEqualTo(currentUser.getUid(), null)
                 .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {

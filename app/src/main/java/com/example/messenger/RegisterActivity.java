@@ -88,18 +88,16 @@ public class RegisterActivity extends Activity {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "createUserWithEmail:success");
                             FirebaseUser user = mAuth.getCurrentUser();
                             assert user != null;
                             final DocumentReference docRef = mFirestore.collection("users").document(user.getUid());
-                            docRef.set(new User(email.getText().toString(), nick.getText().toString()));
+                            docRef.set(new User(email.getText().toString(), nick.getText().toString(), user.getUid()));
                             Intent i = new Intent();
                             i.putExtra("email", email.getText().toString());
                             i.putExtra("password", password.getText().toString());
                             setResult(REGISTER_OK, i);
                             finish();
-                            // update ui
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "createUserWithEmail:failure", task.getException());

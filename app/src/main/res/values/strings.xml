@@ -25,4 +25,5 @@
     <string name="back">Назад</string>
     <string name="logout">Выйти</string>
     <string name="userEmail">Почта:</string>
+    <string name="unsafe_connection">Чат не зашифрован. Пусть другой пользователь откроет приложение</string>
 </resources>

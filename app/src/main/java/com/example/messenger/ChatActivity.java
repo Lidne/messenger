@@ -3,6 +3,7 @@ package com.example.messenger;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.core.app.ComponentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
@@ -16,6 +17,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -41,6 +43,7 @@ import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.InvalidKeyException;
+import java.security.KeyException;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.EncodedKeySpec;
@@ -49,6 +52,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -68,6 +72,8 @@ public class ChatActivity extends Activity {
     private DocumentReference chatRef;
     private MessageController controller;
 
+    private ImageView icon;
+    private TextView warning;
     private EditText chatMessage;
     private Button sendButton;
     private RecyclerView chatWindow;
@@ -75,6 +81,8 @@ public class ChatActivity extends Activity {
     private TextView nickDisplay;
     private CollectionReference messages;
     private RSA rsa;
+
+    private boolean generated;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,9 +94,12 @@ public class ChatActivity extends Activity {
 
         chatMessage = findViewById(R.id.chatMessage);
         sendButton = findViewById(R.id.sendButton);
+        sendButton.setEnabled(false);
         chatWindow = findViewById(R.id.chatWindow);
         back = findViewById(R.id.back);
         nickDisplay = findViewById(R.id.userNick);
+        icon = findViewById(R.id.icon);
+        warning = findViewById(R.id.warning);
 
         chat = new Chat();
         controller = new MessageController();
@@ -105,8 +116,8 @@ public class ChatActivity extends Activity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-                if (s.toString().trim().length() == 0) {
+                Log.d(TAG, "onTextChanged: " + s.toString().trim().length() + " generated: " + !generated);
+                if (s.toString().trim().length() == 0 || !generated) {
                     sendButton.setEnabled(false);
                 } else {
                     sendButton.setEnabled(true);
@@ -137,7 +148,7 @@ public class ChatActivity extends Activity {
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 FirebaseUser currentUser = mAuth.getCurrentUser();
                 if (!task.isSuccessful()) {
-                    Log.d(TAG, "Can't load a file");
+                    Log.d(TAG, "Can't load a file\n" + task.getException());
                     return;
                 }
                 HashMap<String, Object> data = (HashMap<String, Object>) task.getResult().getData();
@@ -159,11 +170,58 @@ public class ChatActivity extends Activity {
 
                 try {
                     rsa = new RSA(ChatActivity.this, false);
-                    rsa.setPublicKey(chat.getAnotherUser().get("public_key"));
-                    rsa.readPrivate(chatId);
+                    String publicKey = chat.getAnotherUser().get("public_key");
+                    if (publicKey == null) {
+                        Log.d(TAG, "onComplete1: " + generated);
+                        icon.setVisibility(View.VISIBLE);
+                        warning.setVisibility(View.VISIBLE);
+                        generated = false;
+                    } else {
+                        rsa.setPublicKey(publicKey);
+                        rsa.readPrivate(chatId);
+                        icon.setVisibility(View.GONE);
+                        warning.setVisibility(View.GONE);
+                        generated = true;
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+
+                chatRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
+                        if (!task.isSuccessful()) {
+                            Log.d(TAG, "Can't load a file\n" + task.getException());
+                            return;
+                        }
+                        HashMap<String, Object> data = (HashMap<String, Object>) task.getResult().getData();
+                        HashMap<String, String> user = new HashMap<>();
+                        HashMap<String, String> another_user = new HashMap<>();
+                        String last_message = "";
+
+                        for (String key : data.keySet()) {
+                            if (key.equals(currentUser.getUid())) {
+                                user = (HashMap<String, String>) data.get(currentUser.getUid());
+                            } else if (!key.equals("last_message")) {
+                                another_user = (HashMap<String, String>) data.get(key);
+                            } else {
+                                last_message = (String) data.get("last_message");
+                            }
+                        }
+                        chat = new Chat(task.getResult().getId(), user, another_user, last_message);
+                        nickDisplay.setText(chat.getAnotherUser().get("nick"));
+
+                        if (another_user.get("public_key") == null) {
+                            icon.setVisibility(View.VISIBLE);
+                            warning.setVisibility(View.VISIBLE);
+                            generated = false;
+                        } else {
+                            icon.setVisibility(View.GONE);
+                            warning.setVisibility(View.GONE);
+                            generated = true;
+                        }
+                    }
+                });
 
                 chatRef.collection("messages").orderBy("date").addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
@@ -211,6 +269,7 @@ public class ChatActivity extends Activity {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void postMessage(View view) throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, IOException {
+        // фукнция отправки сообщения
         FirebaseUser currentUser = mAuth.getCurrentUser();
         DocumentReference message = messages.document();
         String text = chatMessage.getText().toString();
@@ -255,7 +314,6 @@ public class ChatActivity extends Activity {
         String message = new String(messageBytes, StandardCharsets.UTF_8);
         Gson gson = new Gson();
         Message msg = gson.fromJson(message, (Type) Message.class);
-        Log.d(TAG, "readMessage: " + msg);
         return msg;
     }
 

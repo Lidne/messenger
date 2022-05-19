@@ -44,6 +44,7 @@ public class MessageController extends RecyclerView.Adapter {
             this.isOutgoing = isOutgoing;
         }
     }
+
     public class MessageView extends RecyclerView.ViewHolder {
         TextView messageText;
         TextView messageTime;
@@ -95,11 +96,13 @@ public class MessageController extends RecyclerView.Adapter {
         this.messageList = new ArrayList<>();
 
     }
+
     public void appendTo(RecyclerView recyclerView, Context parent) {
         this.recyclerView = recyclerView;
         this.recyclerView.setLayoutManager(new LinearLayoutManager(parent));
         this.recyclerView.setAdapter(this);
     }
+
     public void addMessage(Message m) {
         messageList.add(m);
         if (messageList.size() > MAX_MESSAGES) {
