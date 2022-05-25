@@ -160,47 +160,47 @@ public class MainActivity extends Activity {
         mFirestore.collection("chats")
                 .whereNotEqualTo(currentUser.getUid(), null)
                 .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @RequiresApi(api = Build.VERSION_CODES.O)
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                Chat[] chats = new Chat[task.getResult().size()];
-                if (task.isSuccessful()) {
-                    int i = 0;
-                    for (QueryDocumentSnapshot document : task.getResult()) {
-                        HashMap<String, String> user = new HashMap<>();
-                        HashMap<String, String> another_user = new HashMap<>();
-                        String last_message = "";
-                        Map<String, Object> data = document.getData();
-                        for (String key : data.keySet()) {
-                            if (key.equals(currentUser.getUid())) {
-                                user = (HashMap<String, String>) data.get(currentUser.getUid());
-                            } else if (!key.equals("last_message")) {
-                                another_user = (HashMap<String, String>) data.get(key);
-                            } else {
-                                last_message = (String) data.get("last_message");
+                    @RequiresApi(api = Build.VERSION_CODES.O)
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        Chat[] chats = new Chat[task.getResult().size()];
+                        if (task.isSuccessful()) {
+                            int i = 0;
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                HashMap<String, String> user = new HashMap<>();
+                                HashMap<String, String> another_user = new HashMap<>();
+                                String last_message = "";
+                                Map<String, Object> data = document.getData();
+                                for (String key : data.keySet()) {
+                                    if (key.equals(currentUser.getUid())) {
+                                        user = (HashMap<String, String>) data.get(currentUser.getUid());
+                                    } else if (!key.equals("last_message")) {
+                                        another_user = (HashMap<String, String>) data.get(key);
+                                    } else {
+                                        last_message = (String) data.get("last_message");
+                                    }
+                                }
+                                if (user.get("public_key") == null) {
+                                    try {
+                                        RSA rsa = new RSA(MainActivity.this, true);
+                                        rsa.writeKeys(document.getId());
+                                        user.put("public_key", rsa.getStrPublicKey());
+                                        mFirestore.collection("chats").document(document.getId())
+                                                .update(currentUser.getUid(), user.clone());
+                                    } catch (Exception err) {
+                                        Log.d(TAG, "onEvent: " + err);
+                                    }
+                                }
+                                chats[i] = new Chat(document.getId(), user, another_user, last_message);
+                                i++;
                             }
+                            chat_arr = chats.clone();
+                            chatList.setAdapter(new ChatAdapter(MainActivity.this, chats, mAuth));
+                        } else {
+                            Log.d(TAG, "Error getting documents: ", task.getException());
                         }
-                        if (user.get("public_key") == null) {
-                            try {
-                                RSA rsa = new RSA(MainActivity.this, true);
-                                rsa.writeKeys(document.getId());
-                                user.put("public_key", rsa.getStrPublicKey());
-                                mFirestore.collection("chats").document(document.getId())
-                                        .update(currentUser.getUid(), user.clone());
-                            } catch (Exception err) {
-                                Log.d(TAG, "onEvent: " + err);
-                            }
-                        }
-                        chats[i] = new Chat(document.getId(), user, another_user, last_message);
-                        i++;
                     }
-                    chat_arr = chats.clone();
-                    chatList.setAdapter(new ChatAdapter(MainActivity.this, chats, mAuth));
-                } else {
-                    Log.d(TAG, "Error getting documents: ", task.getException());
-                }
-            }
-        });
+                });
     }
 
     @Override

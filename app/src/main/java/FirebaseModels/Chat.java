@@ -11,7 +11,8 @@ public class Chat {
     private HashMap<String, String> anotherUser;
     private String lastMessage;
 
-    public Chat() {}
+    public Chat() {
+    }
 
     public Chat(String chatId, HashMap<String, String> user, HashMap<String, String> anotherUser, String lastMessage) {
         this.chatId = chatId;

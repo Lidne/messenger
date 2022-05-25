@@ -71,7 +71,7 @@ public class RegisterActivity extends Activity {
 
     public void register(View target) {
         if (password.getText() == null || password_repeat.getText() == null || email.getText() == null
-        || nick.getText() == null) {
+                || nick.getText() == null) {
             Toast.makeText(RegisterActivity.this, R.string.not_filled,
                     Toast.LENGTH_SHORT).show();
             return;
@@ -112,8 +112,7 @@ public class RegisterActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode,
                                     int resultCode,
-                                    Intent data)
-    {
+                                    Intent data) {
 
         super.onActivityResult(requestCode,
                 resultCode,

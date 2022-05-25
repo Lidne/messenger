@@ -39,13 +39,13 @@ public class ProfileActivity extends Activity {
 
         mFirestore.collection("users").document(mAuth.getCurrentUser().getUid())
                 .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot) {
-                HashMap<String, Object> user = (HashMap<String, Object>) documentSnapshot.getData();
-                emailView.setText((String) user.get("email"));
-                profileName.setText((String) user.get("nick"));
-            }
-        });
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        HashMap<String, Object> user = (HashMap<String, Object>) documentSnapshot.getData();
+                        emailView.setText((String) user.get("email"));
+                        profileName.setText((String) user.get("nick"));
+                    }
+                });
     }
 
     public void logout(View target) {
